@@ -1,34 +1,25 @@
 import "./globals.css"
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
 import { Toaster } from "@/components/ui/sonner"
-import { AuthProvider } from "../providers/AuthProvider" // NEW
+import { AuthProvider } from "../providers/AuthProvider"
+import Sidebar from '@/components/ui/Sidebar'
+import { Orbitron } from 'next/font/google'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  variable: '--font-orbitron',
+  display: 'swap',
 })
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-})
-
-export const metadata: Metadata = {
-  title: "Pitch Writer",
-  description: "AI-Powered Pitch Writing Tool",
-}
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${orbitron.variable} font-sans antialiased bg-[#0B0C1E] text-white`}>
         <AuthProvider>
-          {children}
+          <div className="flex">
+            <Sidebar />
+            <main className="ml-64 p-6 min-h-screen w-full">{children}</main>
+          </div>
           <Toaster />
         </AuthProvider>
       </body>
