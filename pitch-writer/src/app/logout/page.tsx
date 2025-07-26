@@ -12,7 +12,7 @@ export default function LogoutPage() {
     const logout = async () => {
       await supabase.auth.signOut()
       // Add a small delay for user to see the message before redirect
-      setTimeout(() => router.push('/login'), 500)
+      setTimeout(() => router.push('/'), 500)
     }
     logout()
   }, [router])

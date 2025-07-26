@@ -1,14 +1,14 @@
 'use client'
 
-import { useState } from "react";
+import { useState , useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, Wand2 ,Zap , Brain , Lightbulb } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
+import Sidebar from '@/components/ui/Sidebar';
 
 
 const API_URL = process.env.NEXT_PUBLIC_PITCH_API_URL!;
@@ -22,6 +22,36 @@ export default function DashboardPage() {
     features: "",
     goal: "",
   });
+  
+  
+  function FloatingParticles() {
+    const [particles, setParticles] = useState<
+      { left: string; top: string; animationDelay: string; animationDuration: string }[]
+    >([])
+  
+    useEffect(() => {
+      const generatedParticles = [...Array(12)].map(() => ({
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDelay: `${Math.random() * 3}s`,
+        animationDuration: `${3 + Math.random() * 2}s`,
+      }))
+      setParticles(generatedParticles)
+    }, [])
+  
+    return (
+      <div className="absolute inset-0 -z-5 pointer-events-none">
+        {particles.map((style, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-blue-400/20 rounded-full animate-bounce-slow"
+            style={style}
+          />
+        ))}
+      </div>
+    )
+  }
+  
   const router = useRouter(); // ✅ add this line inside the component
 
   const [pitch, setPitch] = useState<string | null>(null);
@@ -73,8 +103,43 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
-      <div className="text-center">
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div className="text-center ">
+         <div><Sidebar /></div>
+        {/* Floating decorative elements */}
+       <div className="absolute inset-0 -z-5 pointer-events-none">
+        <div className="absolute top-20 left-10 w-32 h-32 bg-blue-500/5 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-24 h-24 bg-blue-400/8 rounded-full blur-lg animate-bounce-slow"></div>
+        <div className="absolute bottom-32 left-20 w-40 h-40 bg-blue-300/4 rounded-full blur-2xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-32 w-28 h-28 bg-blue-500/6 rounded-full blur-xl animate-bounce-slow"></div>
+        <div className="absolute top-1/2 left-8 w-20 h-20 bg-blue-400/7 rounded-full blur-lg animate-pulse"></div>
+        <div className="absolute top-1/3 right-8 w-36 h-36 bg-blue-300/5 rounded-full blur-2xl animate-bounce-slow"></div>
+        <div className="absolute left-3 top-1/2 w-32 h-32 bg-blue-500/5 rounded-full blur-xl animate-pulse"></div>
+         <div className="absolute bottom-16 left-1/4 w-24 h-24 bg-blue-400/8 rounded-full blur-lg animate-bounce-slow"></div>
+         <div className="absolute left-3 top-1/2 w-40 h-40 bg-blue-300/4 rounded-full blur-2xl animate-pulse"></div>
+         <div className="absolute top-16 left-2/4 w-28 h-28 bg-blue-500/6 rounded-full blur-xl animate-bounce-slow"></div>
+         <div className="absolute bottom-1/2 right-8 w-20 h-20 bg-blue-400/7 rounded-full blur-lg animate-pulse"></div>
+        <div className="absolute bottom-1/3 left-8 w-36 h-36 bg-blue-300/5 rounded-full blur-2xl animate-bounce-slow"></div>
+      
+      </div>
+
+      {/* Floating particles */}
+      
+      <FloatingParticles />
+        {/* Top decorative icons */}
+        <div className="absolute bottom-16 left-2/4 opacity-30">
+          <Brain className="w-8 h-8 text-blue-400 animate-pulse" />
+        </div>
+        <div className="absolute top-8 right-8 opacity-30">
+          <Zap className="w-8 h-8 text-blue-400 animate-bounce-slow" />
+        </div>
+        <div className="absolute top-16 left-1/4 opacity-20">
+          <Lightbulb className="w-6 h-6 text-blue-300 animate-pulse" />
+        </div>
+        <div className="absolute top-16 right-1/4 opacity-20">
+          <Wand2 className="w-6 h-6 text-blue-300 animate-bounce-slow" />
+        </div>
+
         <h1 className="text-5xl font-bold font-orbitron">AI Pitch Generator</h1>
         <p className="text-lg text-gray-400 mt-2">Fill in the details below to generate your custom pitch.</p>
       </div>
