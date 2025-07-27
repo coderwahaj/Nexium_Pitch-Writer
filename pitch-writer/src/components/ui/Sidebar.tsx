@@ -29,7 +29,7 @@ const Sidebar = () => {
             href={item.href}
             className={cn(
                 "flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-white/10 hover:text-white transition-all duration-200",
-                pathname === item.href && "bg-gradient-to-r from-purple-600/30 to-blue-500/30 text-white border-l-2 border-blue-400"
+                pathname === item.href && "bg-gradient-to-r from-purple-600 to-blue-500 text-white border-l-2 border-blue-400"
             )}
           >
             <item.icon size={20} />

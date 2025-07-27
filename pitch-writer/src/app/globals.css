@@ -110,6 +110,9 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  .word-spacing-relaxed {
+    word-spacing: 0.2em; /* or try 0.3em or 0.5em */
+  }
 }
 
 @layer base {
@@ -119,4 +122,8 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.word-spacing-relaxed {
+  word-spacing: 0.4em; /* or try 0.3em or 0.5em */
 }

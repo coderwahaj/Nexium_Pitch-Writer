@@ -117,7 +117,7 @@ function FloatingParticles() {
             />
           </div>
 
-          <Button type="submit" disabled={loading} className="w-full h-12 button-gradient">
+          <Button type="submit" disabled={loading} className="bg-gradient-to-r from-purple-600 to-blue-500 text-white px-8 py-4 w-full h-12 button-gradient shadow-md hover:scale-105 transition-transform">
             {loading ? <Loader2 className="animate-spin" /> : 'Send Magic Link'}
           </Button>
         </form>

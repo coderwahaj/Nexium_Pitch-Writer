@@ -13,13 +13,40 @@ import {
   Brain,
   Lightbulb,
   ClipboardCopy,
+  Download,
 } from "lucide-react";
+import { div } from "framer-motion/client";
 
 export default function ResultPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-
   const pitch = searchParams.get("pitch") || "";
+  const rawFormData = searchParams.get("formData");
+
+  let parsedFormData: {
+    pitchType: string;
+    productName: string;
+    problem: string;
+    audience: string;
+    features: string;
+    goal: string;
+  } = {
+    pitchType: "",
+    productName: "",
+    problem: "",
+    audience: "",
+    features: "",
+    goal: "",
+  };
+
+  if (rawFormData) {
+    try {
+      parsedFormData = JSON.parse(rawFormData);
+    } catch (e) {
+      console.error("Failed to parse formData:", e);
+    }
+  }
+
   const [summary, setSummary] = useState("");
   const [translation, setTranslation] = useState("");
   const [loadingSummary, setLoadingSummary] = useState(false);
@@ -30,8 +57,37 @@ export default function ResultPage() {
     setTranslation("");
   }, [pitch]);
 
-  const handleRegenerate = () => {
-    router.push("/dashboard");
+  const handleRegenerate = async () => {
+    const API_URL = process.env.NEXT_PUBLIC_PITCH_API_URL!;
+
+    setLoadingSummary(true); // reuse the loadingSummary state
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsedFormData),
+      });
+
+      const data = await res.json();
+      const regeneratedPitch = data.choices?.[0]?.message?.content;
+
+      if (!regeneratedPitch) {
+        alert("No pitch returned.");
+        return;
+      } else {
+        alert("Pitch Regenerated!!");
+      }
+
+      router.replace(
+        `/result?pitch=${encodeURIComponent(
+          regeneratedPitch
+        )}&formData=${encodeURIComponent(JSON.stringify(parsedFormData))}`
+      );
+    } catch (err) {
+      alert("Failed to regenerate pitch.");
+    } finally {
+      setLoadingSummary(false);
+    }
   };
 
   const handleSummarize = async () => {
@@ -81,7 +137,14 @@ export default function ResultPage() {
     navigator.clipboard.writeText(text);
     alert("Copied to clipboard!");
   };
-
+  const saveAsText = (text: string, filename: string) => {
+    const blob = new Blob([text], { type: "text/plain" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
   function FloatingParticles() {
     const [particles, setParticles] = useState<
       {
@@ -116,7 +179,7 @@ export default function ResultPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6 space-y-6 relative">
+    <div className="max-w-5xl mx-auto p-8 space-y-8 relative">
       <Sidebar />
 
       {/* Background blobs */}
@@ -152,26 +215,44 @@ export default function ResultPage() {
         <Wand2 className="w-6 h-6 text-blue-300 animate-bounce-slow" />
       </div>
 
-      <h1 className="text-3xl font-bold">Your Generated Pitch</h1>
+      <h1 className="text-2xl font-bold">Your Generated Pitch</h1>
 
-      {/* PITCH */}
-      <div className="relative">
-        <Textarea readOnly className="min-h-[150px] pr-20" value={pitch} />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute bottom-2 right-2 px-3 py-1 text-sm"
-          onClick={() => handleCopy(pitch)}
-        >
-          <ClipboardCopy className="w-4 h-4 mr-1" />
-          Copy
-        </Button>
+      {/*PITCH*/}
+      <div>
+        <Textarea
+          readOnly
+          value={pitch}
+          className="min-h-[200px] text-2xl leading-relaxed tracking-wide word-spacing-relaxed"
+        />
+        <div className="mt-2 flex justify-end gap-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => saveAsText(pitch, "pitch.txt")}
+          >
+            <Download className="w-4 h-4 mr-1" />
+            Save
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleCopy(pitch)}
+          >
+            <ClipboardCopy className="w-4 h-4 mr-1" />
+            Copy
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-3">
-        <Button onClick={handleRegenerate} variant="secondary">
-          Regenerate
+        <Button
+          onClick={handleRegenerate}
+          variant="secondary"
+          disabled={loadingTranslation}
+        >
+          {loadingSummary ? "Regenerating..." : "Regenerate"}
         </Button>
+
         <Button onClick={handleSummarize} disabled={loadingSummary}>
           {loadingSummary ? "Summarizing..." : "Summarize"}
         </Button>
@@ -180,39 +261,62 @@ export default function ResultPage() {
         </Button>
       </div>
 
-      {/* SUMMARY */}
       {summary && (
-        <div className="relative">
-          <Textarea readOnly className="min-h-[100px] pr-20" value={summary} />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute bottom-2 right-2 px-3 py-1 text-sm"
-            onClick={() => handleCopy(summary)}
-          >
-            <ClipboardCopy className="w-4 h-4 mr-1" />
-            Copy
-          </Button>
+        <div>
+          <h2 className="text-2xl font-bold">Your Summary</h2>
+          <Textarea
+            readOnly
+            value={summary}
+            className="min-h-[200px] text-base leading-relaxed tracking-wide word-spacing-relaxed"
+          />
+          <div className="mt-2 flex justify-end gap-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => saveAsText(summary, "summary.txt")}
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Save
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCopy(summary)}
+            >
+              <ClipboardCopy className="w-4 h-4 mr-1" />
+              Copy
+            </Button>
+          </div>
         </div>
       )}
 
       {/* TRANSLATION */}
       {translation && (
-        <div className="relative">
+        <div>
+          <h2 className="text-2xl font-bold">Your Urdu Translation</h2>
           <Textarea
             readOnly
-            className="min-h-[100px] pr-20"
             value={translation}
+            className="min-h-[200px] text-lg leading-relaxed tracking-wide word-spacing-relaxed"
           />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="absolute bottom-2 right-2 px-3 py-1 text-sm"
-            onClick={() => handleCopy(translation)}
-          >
-            <ClipboardCopy className="w-4 h-4 mr-1" />
-            Copy
-          </Button>
+          <div className="mt-2 flex justify-end gap-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => saveAsText(translation, "translation.txt")}
+            >
+              <Download className="w-4 h-4 mr-1" />
+              Save
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => handleCopy(translation)}
+            >
+              <ClipboardCopy className="w-4 h-4 mr-1" />
+              Copy
+            </Button>
+          </div>
         </div>
       )}
     </div>
