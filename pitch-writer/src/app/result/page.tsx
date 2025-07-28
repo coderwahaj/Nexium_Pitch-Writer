@@ -86,7 +86,13 @@ export default function ResultPage() {
         )}&formData=${encodeURIComponent(JSON.stringify(parsedFormData))}`
       );
     } catch (err) {
-      alert("Failed to regenerate pitch.");
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : "An unknown error occurred while regenerating the pitch.";
+      alert(`Failed to regenerate pitch.\n${message}`);
     } finally {
       setIsRegenerating(false);
     }
@@ -108,7 +114,13 @@ export default function ResultPage() {
         alert("Failed to summarize: " + data.message);
       }
     } catch (err) {
-      alert("Error while summarizing.");
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : "An unknown error occurred while summarizing the pitch.";
+      alert(`Failed to summarize pitch.\n${message}`);
     } finally {
       setLoadingSummary(false);
     }
@@ -131,7 +143,13 @@ export default function ResultPage() {
         alert("Failed to translate: " + data.message);
       }
     } catch (err) {
-      alert("Error while translating.");
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === "string"
+          ? err
+          : "An unknown error occurred while translating the pitch.";
+      alert(`Failed to translate pitch.\n${message}`);
     } finally {
       setLoadingTranslation(false);
     }
