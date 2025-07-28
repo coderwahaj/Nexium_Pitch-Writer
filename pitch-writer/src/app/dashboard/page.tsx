@@ -1,5 +1,5 @@
 "use client";
-
+import { supabase } from "@/lib/supabaseClient";
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -69,6 +69,53 @@ export default function DashboardPage() {
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setLoading(true);
+  //   setPitch(null);
+
+  //   toast.info("Connecting to AI Synapse...", {
+  //     description: "Generating your pitch...",
+  //   });
+
+  //   try {
+  //     const res = await fetch(API_URL, {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(formData),
+  //     });
+
+  //     if (!res.ok) {
+  //       const errBody = await res.json().catch(() => ({}));
+  //       throw new Error(errBody.message || `HTTP Error: ${res.status}`);
+  //     }
+
+  //     const data = await res.json();
+  //     const content = data.choices?.[0]?.message?.content;
+
+  //     if (!content) {
+  //       throw new Error("Invalid response from AI. No content returned.");
+  //     }
+
+  //     setPitch(content.trim());
+  //     toast.success("Pitch Generated Successfully!");
+
+  //     const fullParams = new URLSearchParams({
+  //       pitch: content.trim(),
+  //       formData: JSON.stringify(formData),
+  //     }).toString();
+
+  //     router.push(`/result?${fullParams}`);
+
+  //   } catch (err: unknown) {
+  //     const message =
+  //       err instanceof Error ? err.message : "An unknown error occurred.";
+  //     console.error(err);
+  //     toast.error("Generation Failed", { description: message });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -97,11 +144,44 @@ export default function DashboardPage() {
         throw new Error("Invalid response from AI. No content returned.");
       }
 
-      setPitch(content.trim());
+      const generatedPitch = content.trim();
+      setPitch(generatedPitch);
       toast.success("Pitch Generated Successfully!");
 
+      // ✅ Get user session
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.warn("No session found");
+      }
+
+      const userEmail = session?.user?.email ?? "";
+      if (!userEmail) {
+        toast.error("You must be logged in to save your pitch.");
+        return;
+      }
+
+      // ✅ Save to Supabase
+      const { error: insertError } = await supabase.from("pitches").insert([
+        {
+          user_email: userEmail,
+          pitch_type: formData.pitchType,
+          input_data: formData,
+          output_pitch: generatedPitch,
+        },
+      ]);
+
+      if (insertError) {
+        console.error("Error saving to Supabase:", insertError);
+        toast.error("Pitch generated, but failed to save.");
+      }
+
+      // ✅ Redirect
       const fullParams = new URLSearchParams({
-        pitch: content.trim(),
+        pitch: generatedPitch,
         formData: JSON.stringify(formData),
       }).toString();
 
@@ -167,7 +247,7 @@ export default function DashboardPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           <div className="md:col-span-2 h-15">
-            <label className="font-bold text-gray-300 mb-2 block">
+            <label className="font-bold text-gray-300 mb-2 block h-8">
               Pitch Type
             </label>
             <Select
