@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import Sidebar from "@/components/ui/Sidebar";
 import {
+  Sparkles,
+  Loader2,
   Wand2,
   Zap,
   Brain,
@@ -240,29 +242,58 @@ export default function ResultPage() {
           </Button>
         </div>
       </div>
+
       <div className="flex gap-3">
         <Button
           onClick={handleRegenerate}
           variant="secondary"
           disabled={isRegenerating || loadingSummary || loadingTranslation}
         >
-          {isRegenerating && !loadingSummary && !loadingTranslation
-            ? "Regenerating..."
-            : "Regenerate"}
+          {isRegenerating && !loadingSummary && !loadingTranslation ? (
+            <>
+              <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              Regenerating...
+            </>
+          ) : (
+            <>
+              <Wand2 className="mr-2 h-4 w-4" />
+              Regenerate
+            </>
+          )}
         </Button>
 
         <Button
           onClick={handleSummarize}
           disabled={isRegenerating || loadingSummary}
         >
-          {loadingSummary ? "Summarizing..." : "Summarize"}
+          {loadingSummary ? (
+            <>
+              <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              Summarizing...
+            </>
+          ) : (
+            <>
+              <Sparkles className="mr-2 h-4 w-4" />
+              Summarize
+            </>
+          )}
         </Button>
 
         <Button
           onClick={handleTranslate}
           disabled={isRegenerating || loadingTranslation}
         >
-          {loadingTranslation ? "Translating..." : "Translate to Urdu"}
+          {loadingTranslation ? (
+            <>
+              <Loader2 className="animate-spin mr-2 h-4 w-4" />
+              Translating...
+            </>
+          ) : (
+            <>
+              <Zap className="mr-2 h-4 w-4" />
+              Translate to Urdu
+            </>
+          )}
         </Button>
       </div>
 
