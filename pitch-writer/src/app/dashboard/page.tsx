@@ -117,7 +117,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto">
       <div className="text-center ">
         <div>
           <Sidebar />
@@ -166,7 +166,7 @@ export default function DashboardPage() {
           onSubmit={handleSubmit}
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 h-15">
             <label className="font-bold text-gray-300 mb-2 block">
               Pitch Type
             </label>
@@ -186,31 +186,31 @@ export default function DashboardPage() {
             </Select>
           </div>
           <Input
-            className="input-glass h-12"
+            className="input-glass h-11"
             placeholder="Product / Idea Name"
             onChange={(e) => handleChange("productName", e.target.value)}
             required
           />
           <Input
-            className="input-glass h-12"
+            className="input-glass h-11"
             placeholder="Target Audience"
             onChange={(e) => handleChange("audience", e.target.value)}
             required
           />
-          <Textarea
-            className="input-glass md:col-span-2"
+          <Input
+            className="input-glass col-span-2 h-11"
             placeholder="What core problem are you solving?"
             onChange={(e) => handleChange("problem", e.target.value)}
             required
           />
-          <Textarea
-            className="input-glass md:col-span-2"
+          <Input
+            className="input-glass col-span-2 h-11"
             placeholder="What are the key features or your solution?"
             onChange={(e) => handleChange("features", e.target.value)}
             required
           />
           <Textarea
-            className="input-glass md:col-span-2"
+            className="input-glass col-span-2 "
             placeholder="What is the primary goal of this pitch?"
             onChange={(e) => handleChange("goal", e.target.value)}
             required

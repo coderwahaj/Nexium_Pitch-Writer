@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import Sidebar from "@/components/ui/Sidebar";
 import {
-  Loader2,
-  Sparkles,
   Wand2,
   Zap,
   Brain,
@@ -15,7 +13,6 @@ import {
   ClipboardCopy,
   Download,
 } from "lucide-react";
-import { div } from "framer-motion/client";
 
 export default function ResultPage() {
   const searchParams = useSearchParams();
@@ -49,6 +46,7 @@ export default function ResultPage() {
 
   const [summary, setSummary] = useState("");
   const [translation, setTranslation] = useState("");
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingTranslation, setLoadingTranslation] = useState(false);
 
@@ -58,9 +56,11 @@ export default function ResultPage() {
   }, [pitch]);
 
   const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    setSummary("");
+    setTranslation("");
     const API_URL = process.env.NEXT_PUBLIC_PITCH_API_URL!;
 
-    setLoadingSummary(true); // reuse the loadingSummary state
     try {
       const res = await fetch(API_URL, {
         method: "POST",
@@ -86,7 +86,7 @@ export default function ResultPage() {
     } catch (err) {
       alert("Failed to regenerate pitch.");
     } finally {
-      setLoadingSummary(false);
+      setIsRegenerating(false);
     }
   };
 
@@ -114,6 +114,7 @@ export default function ResultPage() {
 
   const handleTranslate = async () => {
     setLoadingTranslation(true);
+
     try {
       const res = await fetch("/api/translate", {
         method: "POST",
@@ -233,30 +234,34 @@ export default function ResultPage() {
             <Download className="w-4 h-4 mr-1" />
             Save
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleCopy(pitch)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => handleCopy(pitch)}>
             <ClipboardCopy className="w-4 h-4 mr-1" />
             Copy
           </Button>
         </div>
       </div>
-
       <div className="flex gap-3">
         <Button
           onClick={handleRegenerate}
           variant="secondary"
-          disabled={loadingTranslation}
+          disabled={isRegenerating || loadingSummary || loadingTranslation}
         >
-          {loadingSummary ? "Regenerating..." : "Regenerate"}
+          {isRegenerating && !loadingSummary && !loadingTranslation
+            ? "Regenerating..."
+            : "Regenerate"}
         </Button>
 
-        <Button onClick={handleSummarize} disabled={loadingSummary}>
+        <Button
+          onClick={handleSummarize}
+          disabled={isRegenerating || loadingSummary}
+        >
           {loadingSummary ? "Summarizing..." : "Summarize"}
         </Button>
-        <Button onClick={handleTranslate} disabled={loadingTranslation}>
+
+        <Button
+          onClick={handleTranslate}
+          disabled={isRegenerating || loadingTranslation}
+        >
           {loadingTranslation ? "Translating..." : "Translate to Urdu"}
         </Button>
       </div>
@@ -267,7 +272,7 @@ export default function ResultPage() {
           <Textarea
             readOnly
             value={summary}
-            className="min-h-[200px] text-base leading-relaxed tracking-wide word-spacing-relaxed"
+            className="min-h-[100px] text-base leading-relaxed tracking-wide word-spacing-relaxed"
           />
           <div className="mt-2 flex justify-end gap-x-2">
             <Button
