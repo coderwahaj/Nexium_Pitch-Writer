@@ -1,11 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { supabase } from "@/lib/supabaseClient";
 import Sidebar from "@/components/ui/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash, Brain, Zap, Lightbulb, Wand2, Loader2,Search } from "lucide-react";
+import {
+  Trash,
+  Brain,
+  Zap,
+  Lightbulb,
+  Wand2,
+  Loader2,
+  Search,
+} from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { format } from "date-fns"; // npm i date-fns
 import { toast } from "sonner";
