@@ -1,13 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
-
+import { useRouter } from "next/navigation";
 import { Loader2, Wand2, Zap, Brain, Lightbulb } from "lucide-react";
-
-export default function LogoutPage() {
+export default function GeneratingPage() {
   const router = useRouter();
+
   function FloatingParticles() {
     const [particles, setParticles] = useState<
       {
@@ -41,12 +39,37 @@ export default function LogoutPage() {
     );
   }
   useEffect(() => {
-    const logout = async () => {
-      await supabase.auth.signOut();
-      // Add a small delay for user to see the message before redirect
-      setTimeout(() => router.push("/"), 500);
+    const generatePitch = async () => {
+      const rawFormData = localStorage.getItem("formData"); // get from localStorage
+      if (!rawFormData) return router.push("/generating");
+
+      try {
+        const res = await fetch(process.env.NEXT_PUBLIC_PITCH_API_URL!, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: rawFormData,
+        });
+
+        const data = await res.json();
+        const pitch = data.choices?.[0]?.message?.content;
+
+        if (!pitch) {
+          return router.push("/error"); // handle this as you like
+        }
+
+        // Send pitch and formData to result page
+        router.push(
+          `/result?pitch=${encodeURIComponent(
+            pitch
+          )}&formData=${encodeURIComponent(rawFormData)}`
+        );
+      } catch (err) {
+        console.error("Error generating pitch:", err);
+        router.push("/error");
+      }
     };
-    logout();
+
+    generatePitch();
   }, [router]);
 
   return (
@@ -103,9 +126,10 @@ export default function LogoutPage() {
             <Brain className="w-8 h-8 text-blue-400 animate-bounce-slow" />
           </div>
         </div>
-        <Loader2 className="h-12 w-12 animate-spin text-white-500 mx-auto" />
-        <p className="mt-4 text-lg font-orbitron tracking-widest text-white-400">
-          DE-AUTHENTICATING...
+
+        <Loader2 className="h-12 w-12 animate-spin text-white mx-auto" />
+        <p className="mt-4 text-lg font-orbitron tracking-widest text-white/80">
+          GENERATING PITCH...
         </p>
       </div>
     </div>

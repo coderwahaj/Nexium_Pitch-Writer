@@ -64,6 +64,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <div className="flex">
+            <Sidebar />
             <main className="ml-64 p-6 min-h-screen w-full">{children}</main>
           </div>
           <Toaster />

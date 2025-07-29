@@ -69,61 +69,10 @@ export default function DashboardPage() {
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setLoading(true);
-  //   setPitch(null);
-
-  //   toast.info("Connecting to AI Synapse...", {
-  //     description: "Generating your pitch...",
-  //   });
-
-  //   try {
-  //     const res = await fetch(API_URL, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(formData),
-  //     });
-
-  //     if (!res.ok) {
-  //       const errBody = await res.json().catch(() => ({}));
-  //       throw new Error(errBody.message || `HTTP Error: ${res.status}`);
-  //     }
-
-  //     const data = await res.json();
-  //     const content = data.choices?.[0]?.message?.content;
-
-  //     if (!content) {
-  //       throw new Error("Invalid response from AI. No content returned.");
-  //     }
-
-  //     setPitch(content.trim());
-  //     toast.success("Pitch Generated Successfully!");
-
-  //     const fullParams = new URLSearchParams({
-  //       pitch: content.trim(),
-  //       formData: JSON.stringify(formData),
-  //     }).toString();
-
-  //     router.push(`/result?${fullParams}`);
-
-  //   } catch (err: unknown) {
-  //     const message =
-  //       err instanceof Error ? err.message : "An unknown error occurred.";
-  //     console.error(err);
-  //     toast.error("Generation Failed", { description: message });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setPitch(null);
-
-    toast.info("Connecting to AI Synapse...", {
-      description: "Generating your pitch...",
-    });
 
     try {
       const res = await fetch(API_URL, {
@@ -195,9 +144,12 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
-
+  const handleGenerate = async () => {
+    // Navigate to generating page
+    router.push("/generating");
+  };
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto ">
       <div className="text-center ">
         <div>
           <Sidebar />
@@ -247,7 +199,7 @@ export default function DashboardPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           <div className="md:col-span-2 h-15">
-            <label className="font-bold text-gray-300 mb-2 block h-8">
+            <label className="font-bold text-gray-300 mb-2 block">
               Pitch Type
             </label>
             <Select
@@ -297,6 +249,7 @@ export default function DashboardPage() {
           />
 
           <Button
+            onClick={handleGenerate}
             type="submit"
             className="bg-gradient-to-r from-purple-600 to-blue-500 text-white border-blue-400 button-gradient shadow-md hover:scale-105 transition-transform w-full h-12 button-gradient md:col-span-2 text-lg"
             disabled={loading}
@@ -305,7 +258,7 @@ export default function DashboardPage() {
               <Loader2 className="animate-spin" />
             ) : (
               <>
-                <Wand2 className=" mr-2" /> Generate Pitch
+                <Wand2 className="mr-2" /> Generate Pitch
               </>
             )}
           </Button>
