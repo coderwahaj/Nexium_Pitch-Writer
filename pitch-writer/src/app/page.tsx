@@ -277,7 +277,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-white/30 text-black hover:bg-white/10 px-8 py-4 rounded-full backdrop-blur-md"
+                className="border-white/30 text-black hover:bg-gradient-to-r from-purple-400 to-blue-500 px-8 py-4 rounded-full backdrop-blur-md"
               >
                 Learn More
               </Button>

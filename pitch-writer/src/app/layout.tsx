@@ -62,13 +62,14 @@ export default function RootLayout({
       <body
         className={`${orbitron.variable} ${inter.variable} font-sans antialiased bg-[#0B0C1E] text-white`}
       >
-        <AuthProvider>
-          <div className="flex">
-            <Sidebar />
-            <main className="ml-64 p-6 min-h-screen w-full">{children}</main>
-          </div>
-          <Toaster />
-        </AuthProvider>
+        
+          <AuthProvider>
+            <div className="flex">
+              <Sidebar />
+              <main className="ml-64 p-6 min-h-screen w-full">{children}</main>
+            </div>
+            <Toaster />
+          </AuthProvider>
       </body>
     </html>
   );

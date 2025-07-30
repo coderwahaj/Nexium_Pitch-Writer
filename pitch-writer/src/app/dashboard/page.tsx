@@ -61,18 +61,41 @@ export default function DashboardPage() {
     );
   }
 
-  const router = useRouter(); // ✅ add this line inside the component
-
+  const router = useRouter();
+  const [isOther, setIsOther] = useState(false);
   const [pitch, setPitch] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+  const handlePitchTypeChange = (val: string) => {
+    if (val === "other") {
+      setIsOther(true);
+      setFormData((prev) => ({ ...prev, pitchType: "" }));
+    } else {
+      setIsOther(false);
+      setFormData((prev) => ({ ...prev, pitchType: val }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // ——— 1. Quick front‑end validation ———
+    const missing = Object.entries(formData)
+      .filter(([_, v]) => typeof v === "string" && !v.trim())
+      .map(([k]) => k);
+    if (missing.length > 0) {
+      toast.error(`Please fill in: ${missing.join(", ")}`);
+      return; // stop here: no loading, no redirect
+    }
+
+    // ——— 2. All fields are non‑empty, proceed as before ———
     setLoading(true);
     setPitch(null);
+    // Navigate to generating page
+    router.push("/generating");
 
     try {
       const res = await fetch(API_URL, {
@@ -80,7 +103,6 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
         throw new Error(errBody.message || `HTTP Error: ${res.status}`);
@@ -88,52 +110,41 @@ export default function DashboardPage() {
 
       const data = await res.json();
       const content = data.choices?.[0]?.message?.content;
-
-      if (!content) {
+      if (!content)
         throw new Error("Invalid response from AI. No content returned.");
-      }
 
       const generatedPitch = content.trim();
       setPitch(generatedPitch);
       toast.success("Pitch Generated Successfully!");
 
-      // ✅ Get user session
+      // ——— Save to Supabase ———
       const {
         data: { session },
         error: sessionError,
       } = await supabase.auth.getSession();
-
-      if (sessionError) {
-        console.warn("No session found");
-      }
-
-      const userEmail = session?.user?.email ?? "";
-      if (!userEmail) {
+      if (sessionError || !session?.user?.email) {
         toast.error("You must be logged in to save your pitch.");
-        return;
+      } else {
+        const userEmail = session.user.email;
+        const { error: insertError } = await supabase.from("pitches").insert([
+          {
+            user_email: userEmail,
+            pitch_type: formData.pitchType,
+            input_data: formData,
+            output_pitch: generatedPitch,
+          },
+        ]);
+        if (insertError) {
+          console.error("Error saving to Supabase:", insertError);
+          toast.error("Pitch generated, but failed to save.");
+        }
       }
 
-      // ✅ Save to Supabase
-      const { error: insertError } = await supabase.from("pitches").insert([
-        {
-          user_email: userEmail,
-          pitch_type: formData.pitchType,
-          input_data: formData,
-          output_pitch: generatedPitch,
-        },
-      ]);
-
-      if (insertError) {
-        console.error("Error saving to Supabase:", insertError);
-        toast.error("Pitch generated, but failed to save.");
-      }
-
-      // ✅ Redirect
+      // ——— Redirect to results ———
       const fullParams = new URLSearchParams({
         pitch: generatedPitch,
         formData: JSON.stringify(formData),
       }).toString();
-
       router.push(`/result?${fullParams}`);
     } catch (err: unknown) {
       const message =
@@ -144,10 +155,7 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
-  const handleGenerate = async () => {
-    // Navigate to generating page
-    router.push("/generating");
-  };
+
   return (
     <div className="max-w-4xl mx-auto ">
       <div className="text-center ">
@@ -199,57 +207,86 @@ export default function DashboardPage() {
           className="grid grid-cols-1 md:grid-cols-2 gap-6"
         >
           <div className="md:col-span-2 h-15">
-            <label className="font-bold text-gray-300 mb-2 block">
-              Pitch Type
-            </label>
-            <Select
-              onValueChange={(v) => handleChange("pitchType", v)}
-              required
-            >
-              <SelectTrigger className="input-glass h-12 w-full">
-                <SelectValue placeholder="Select pitch type" />
-              </SelectTrigger>
-              <SelectContent className="glass-container border-none">
-                <SelectItem value="startup">Startup Pitch</SelectItem>
-                <SelectItem value="product">Product Pitch</SelectItem>
-                <SelectItem value="job">Job Interview Pitch</SelectItem>
-                <SelectItem value="investor">Investor Pitch</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Pitch Type */}
+            {!isOther ? (
+              <div>
+                <label className="block mb-1 font-medium">Pitch Type</label>
+                <Select onValueChange={handlePitchTypeChange} required>
+                  <SelectTrigger className="input-glass h-12 w-full">
+                    <SelectValue placeholder="Select pitch type" />
+                  </SelectTrigger>
+                  <SelectContent className="glass-container border-none">
+                    <SelectItem value="startup">Startup Pitch</SelectItem>
+                    <SelectItem value="product">Product Pitch</SelectItem>
+                    <SelectItem value="job">Job Interview Pitch</SelectItem>
+                    <SelectItem value="investor">Investor Pitch</SelectItem>
+                    <SelectItem value="other">Other…</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div>
+                <label className="block mb-1 font-medium">
+                  Pitch Type (custom)
+                </label>
+                <Input
+                  className="input-glass h-12 w-full"
+                  placeholder="Enter your pitch type"
+                  value={formData.pitchType}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      pitchType: e.target.value,
+                    }))
+                  }
+                  required
+                />
+                <Button
+                  variant="link"
+                  size="sm"
+                  className="mt-1"
+                  onClick={() => {
+                    setIsOther(false);
+                    setFormData((prev) => ({ ...prev, pitchType: "" }));
+                  }}
+                >
+                  ← Back to list
+                </Button>
+              </div>
+            )}
           </div>
           <Input
-            className="input-glass h-11"
+            className="input-glass h-11 custom-placeholder"
             placeholder="Product / Idea Name"
             onChange={(e) => handleChange("productName", e.target.value)}
             required
           />
           <Input
-            className="input-glass h-11"
+            className="input-glass h-11 custom-placeholder"
             placeholder="Target Audience"
             onChange={(e) => handleChange("audience", e.target.value)}
             required
           />
           <Input
-            className="input-glass col-span-2 h-11"
+            className="input-glass col-span-2 h-11 custom-placeholder"
             placeholder="What core problem are you solving?"
             onChange={(e) => handleChange("problem", e.target.value)}
             required
           />
           <Input
-            className="input-glass col-span-2 h-11"
+            className="input-glass col-span-2 h-11 custom-placeholder"
             placeholder="What are the key features or your solution?"
             onChange={(e) => handleChange("features", e.target.value)}
             required
           />
           <Textarea
-            className="input-glass col-span-2 "
+            className="input-glass col-span-2 custom-placeholder"
             placeholder="What is the primary goal of this pitch?"
             onChange={(e) => handleChange("goal", e.target.value)}
             required
           />
 
           <Button
-            onClick={handleGenerate}
             type="submit"
             className="bg-gradient-to-r from-purple-600 to-blue-500 text-white border-blue-400 button-gradient shadow-md hover:scale-105 transition-transform w-full h-12 button-gradient md:col-span-2 text-lg"
             disabled={loading}

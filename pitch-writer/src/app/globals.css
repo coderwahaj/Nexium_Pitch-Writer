@@ -77,7 +77,11 @@
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
 }
-
+/* Customize placeholder color */
+.custom-placeholder::placeholder {
+  color: oklch(77.384% 0.0411 256.646); /* Tailwind gray-400 */
+  opacity: 1; /* Ensure full visibility */
+}
 .dark {
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
@@ -114,7 +118,10 @@
     word-spacing: 0.2em; /* or try 0.3em or 0.5em */
   }
 }
-
+/* styles.css or in your global CSS */
+.white-placeholder::placeholder {
+  color: #e0e2e7; /* Tailwind's gray-400 */
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;
