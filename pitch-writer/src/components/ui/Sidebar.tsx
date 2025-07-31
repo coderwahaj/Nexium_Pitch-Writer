@@ -41,6 +41,8 @@ const Sidebar = () => {
                 pathname === item.href &&
                   "bg-gradient-to-r from-purple-600 to-blue-500 text-white border-l-2 border-blue-400"
               )}
+
+              
             >
               <item.icon size={20} />
               <span className="font-medium">{item.label}</span>
@@ -48,7 +50,7 @@ const Sidebar = () => {
           ))}
         </nav>
       </aside>
-      
+
     </div>
   );
 };
