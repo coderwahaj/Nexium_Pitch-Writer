@@ -5,8 +5,10 @@ PitchPro is an AI-powered web application designed to help users effortlessly ge
 ## ✨ Features
 
 - 🧠 Generate AI-powered startup pitches instantly  
-- 🌐 Translate pitches to multiple languages *(Coming Soon)*  
-- 🎨 Sleek, responsive UI with a futuristic design  
+- 🌐 Translate pitches to multiple languages   
+- 🎨 Sleek, responsive UI with a futuristic design
+- 🧠 Generate Summarize version AI-powered pitches instantly  
+- 📂 Save and copy your pitch,summary and translation  
 - 🔒 Authentication with session-based access  
 - 📂 Save and view your pitch history  
 
